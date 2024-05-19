@@ -1,6 +1,7 @@
 package com.example.productservice;
 
 import com.example.productservice.dto.ProductRequest;
+import com.example.productservice.mapper.ProductMapper;
 import com.example.productservice.repository.ProductRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -18,7 +20,11 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigDecimal;
 
+import static net.bytebuddy.matcher.ElementMatchers.is;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -33,6 +39,8 @@ class ProductServiceApplicationTests {
     private ObjectMapper objectMapper;
     @Autowired
     ProductRepository productRepository;
+    @Autowired
+    ProductMapper productMapper;
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry dynamicPropertyRegistry) {
@@ -50,6 +58,18 @@ class ProductServiceApplicationTests {
                 .andExpect(status().isCreated());
 
         assertEquals(1, productRepository.findAll().size());
+    }
+
+    @Test
+    void shouldReturnAllProducts() throws Exception {
+        productRepository.save(productMapper.mapFromRequest(getProductRequest()));
+
+        mockMvc.perform(get("/api/products"))
+
+                //then
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect((ResultMatcher) jsonPath("$[0].name", is("Legion Slim 15")));
     }
 
     private ProductRequest getProductRequest() {

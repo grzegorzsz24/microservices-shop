@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class ProductServiceApplicationTests {
     @Container
-    static MongoDBContainer mongoDBContainer =  new MongoDBContainer("mongo: 4.4.2");
+    static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo: 4.4.2");
     @Autowired
     private MockMvc mockMvc;
     @Autowired
@@ -53,8 +53,8 @@ class ProductServiceApplicationTests {
         String productRequestString = objectMapper.writeValueAsString(productRequest);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/products")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(productRequestString))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(productRequestString))
                 .andExpect(status().isCreated());
 
         assertEquals(1, productRepository.findAll().size());
